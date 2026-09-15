@@ -4116,18 +4116,14 @@ async function registerDicePlayerOnline(name) {
 async function saveDiceRoll(item) {
 
     if (!dicePlayerName) {
+        console.error("No dice player name.");
         return;
     }
 
-
     let playerId =
-        localStorage.getItem(
-            "reincarnationDicePlayerId"
-        );
+        localStorage.getItem("reincarnationDicePlayerId");
 
-
-    // If player has no database ID yet,
-    // register them first.
+    // Register player if needed
     if (!playerId) {
 
         const registered =
@@ -4136,6 +4132,7 @@ async function saveDiceRoll(item) {
             );
 
         if (!registered) {
+            console.error("Player registration failed.");
             return;
         }
 
@@ -4145,6 +4142,22 @@ async function saveDiceRoll(item) {
             );
     }
 
+    if (!playerId) {
+        console.error("No player ID found.");
+        return;
+    }
+
+    const rollData = {
+        player_id: Number(playerId),
+        title_id: item.id,
+        rarity: item.rarity,
+        title_name: item.title,
+        drop_rate: item.rate,
+        rarity_rank: item.rank,
+        week_key: getDiceWeekKey()
+    };
+
+    console.log("Saving soul record:", rollData);
 
     try {
 
@@ -4153,63 +4166,55 @@ async function saveDiceRoll(item) {
                 DICE_SUPABASE_URL +
                 "/rest/v1/dice_rolls",
                 {
-                    method:"POST",
+                    method: "POST",
 
-                    headers:{
+                    headers: {
                         ...diceSupabaseHeaders(),
 
                         "Prefer":
-                            "return=minimal"
+                            "return=representation"
                     },
 
-                    body:JSON.stringify({
-
-                        player_id:
-                            Number(playerId),
-
-                        title_id:
-                            item.id,
-
-                        rarity:
-                            item.rarity,
-
-                        title_name:
-                            item.title,
-
-                        drop_rate:
-                            item.rate,
-
-                        rarity_rank:
-                            item.rank,
-
-                        week_key:
-                            getDiceWeekKey()
-
-                    })
+                    body:
+                        JSON.stringify(rollData)
                 }
             );
 
+        const responseText =
+            await response.text();
 
         if (!response.ok) {
 
             console.error(
-                "Roll save failed:",
-                await response.text()
+                "SUPABASE ROLL SAVE FAILED:",
+                response.status,
+                responseText
+            );
+
+            alert(
+                "Your soul was rolled, but the Soul Record could not be saved."
             );
 
             return;
         }
 
+        console.log(
+            "SOUL RECORD SAVED:",
+            responseText
+        );
 
         // Refresh leaderboard immediately
-        loadDiceLeaderboard();
+        await loadDiceLeaderboard();
 
-
-    } catch(error) {
+    } catch (error) {
 
         console.error(
-            "Roll save error:",
+            "ROLL SAVE ERROR:",
             error
+        );
+
+        alert(
+            "Could not connect to the Soul Records."
         );
     }
 }
