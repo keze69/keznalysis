@@ -1844,6 +1844,380 @@ body::after{
 </div>
 </div>
 </div>
+<!-- ============================= -->
+<!-- REINCARNATION DICE -->
+<!-- ============================= -->
+
+<style>
+/* REINCARNATION DICE */
+.dice-system{
+    margin-top:18px;
+    padding:18px;
+    border:1px solid rgba(255,222,211,.16);
+    border-radius:16px;
+    background:linear-gradient(145deg,rgba(20,15,30,.96),rgba(8,8,15,.98));
+    box-shadow:0 10px 35px rgba(0,0,0,.35);
+    overflow:hidden;
+    position:relative;
+}
+
+.dice-title{
+    text-align:center;
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:3px;
+    margin-bottom:5px;
+}
+
+.dice-subtitle{
+    text-align:center;
+    opacity:.65;
+    font-size:12px;
+    margin-bottom:20px;
+}
+
+.dice-name-box{
+    display:flex;
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.dice-name-input{
+    flex:1;
+    min-width:0;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.05);
+    color:inherit;
+    outline:none;
+}
+
+.dice-name-btn,
+.dice-roll-btn{
+    border:0;
+    border-radius:10px;
+    padding:12px 16px;
+    cursor:pointer;
+    font-weight:800;
+    color:white;
+    background:linear-gradient(135deg,#6b4cff,#b13cff);
+}
+
+.dice-name-btn:active,
+.dice-roll-btn:active{
+    transform:scale(.96);
+}
+
+.dice-player{
+    text-align:center;
+    margin-bottom:12px;
+    font-size:13px;
+    opacity:.8;
+}
+
+.dice-stage{
+    height:190px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    perspective:800px;
+    position:relative;
+}
+
+.magic-dice{
+    width:90px;
+    height:90px;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform 1s cubic-bezier(.2,.8,.2,1);
+}
+
+.dice-face{
+    position:absolute;
+    width:90px;
+    height:90px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;
+    font-weight:bold;
+    border:1px solid rgba(255,255,255,.35);
+    background:rgba(30,20,50,.92);
+    box-shadow:
+        inset 0 0 25px rgba(255,255,255,.05),
+        0 0 20px rgba(130,70,255,.2);
+    backface-visibility:hidden;
+}
+
+.face-front{
+    transform:translateZ(45px);
+}
+
+.face-back{
+    transform:rotateY(180deg) translateZ(45px);
+}
+
+.face-right{
+    transform:rotateY(90deg) translateZ(45px);
+}
+
+.face-left{
+    transform:rotateY(-90deg) translateZ(45px);
+}
+
+.face-top{
+    transform:rotateX(90deg) translateZ(45px);
+}
+
+.face-bottom{
+    transform:rotateX(-90deg) translateZ(45px);
+}
+
+.dice-rolling{
+    animation:diceSpin 1.8s cubic-bezier(.15,.8,.2,1);
+}
+
+@keyframes diceSpin{
+    0%{
+        transform:rotateX(0) rotateY(0) rotateZ(0);
+    }
+    30%{
+        transform:rotateX(180deg) rotateY(250deg) rotateZ(80deg) scale(1.15);
+    }
+    65%{
+        transform:rotateX(500deg) rotateY(540deg) rotateZ(180deg) scale(.9);
+    }
+    100%{
+        transform:rotateX(720deg) rotateY(720deg) rotateZ(360deg) scale(1);
+    }
+}
+
+.dice-roll-area{
+    text-align:center;
+}
+
+.dice-roll-btn{
+    min-width:150px;
+    font-size:15px;
+    letter-spacing:1px;
+}
+
+.dice-roll-btn:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+}
+
+.dice-result{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    border-radius:14px;
+    text-align:center;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.12);
+}
+
+.dice-result.show{
+    display:block;
+    animation:resultReveal .7s ease;
+}
+
+@keyframes resultReveal{
+    0%{
+        opacity:0;
+        transform:scale(.5) translateY(20px);
+    }
+    60%{
+        transform:scale(1.08);
+    }
+    100%{
+        opacity:1;
+        transform:scale(1) translateY(0);
+    }
+}
+
+.result-rarity{
+    font-size:11px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    opacity:.7;
+}
+
+.result-title{
+    font-size:26px;
+    font-weight:900;
+    margin:8px 0;
+}
+
+.result-rate{
+    font-size:12px;
+    opacity:.6;
+}
+
+.roll-count{
+    text-align:center;
+    font-size:11px;
+    opacity:.5;
+    margin-top:10px;
+}
+
+/* RARITY EFFECTS */
+
+.rarity-common{
+    box-shadow:0 0 20px rgba(255,255,255,.08);
+}
+
+.rarity-uncommon{
+    box-shadow:0 0 30px rgba(80,255,140,.2);
+}
+
+.rarity-rare{
+    box-shadow:0 0 40px rgba(70,140,255,.35);
+}
+
+.rarity-epic{
+    box-shadow:0 0 50px rgba(180,70,255,.4);
+}
+
+.rarity-legendary{
+    animation:legendaryGlow 1.5s infinite alternate;
+}
+
+@keyframes legendaryGlow{
+    from{box-shadow:0 0 25px rgba(255,170,40,.3)}
+    to{box-shadow:0 0 70px rgba(255,170,40,.8)}
+}
+
+.rarity-mythic{
+    animation:mythicGlow 1s infinite alternate;
+}
+
+@keyframes mythicGlow{
+    from{box-shadow:0 0 30px rgba(255,40,100,.4)}
+    to{box-shadow:0 0 90px rgba(255,40,100,.9)}
+}
+
+.rarity-secret{
+    animation:secretGlitch .15s infinite alternate;
+}
+
+@keyframes secretGlitch{
+    from{transform:translateX(-2px)}
+    to{transform:translateX(2px)}
+}
+
+.rarity-god{
+    animation:godGlow 1.2s infinite alternate;
+}
+
+@keyframes godGlow{
+    from{
+        box-shadow:0 0 30px rgba(255,255,255,.4);
+    }
+    to{
+        box-shadow:
+            0 0 50px rgba(255,255,255,.9),
+            0 0 100px rgba(150,100,255,.8);
+    }
+}
+
+@media(max-width:500px){
+    .dice-name-box{
+        flex-direction:column;
+    }
+
+    .dice-name-btn{
+        width:100%;
+    }
+
+    .result-title{
+        font-size:22px;
+    }
+}
+</style>
+
+<div class="content-block dice-system" id="reincarnationDice">
+
+    <div class="dice-title">REINCARNATION DICE</div>
+
+    <div class="dice-subtitle">
+        Roll the dice and discover your fate.
+    </div>
+
+    <!-- PLAYER NAME -->
+    <div id="diceNameArea">
+
+        <div class="dice-name-box">
+            <input
+                id="diceNameInput"
+                class="dice-name-input"
+                maxlength="20"
+                type="text"
+                placeholder="Enter your name..."
+                autocomplete="off"
+            >
+
+            <button
+                class="dice-name-btn"
+                onclick="registerDicePlayer()">
+                ENTER
+            </button>
+        </div>
+
+    </div>
+
+    <div
+        id="dicePlayer"
+        class="dice-player"
+        style="display:none;">
+    </div>
+
+    <!-- DICE -->
+    <div class="dice-stage">
+
+        <div class="magic-dice" id="magicDice">
+
+            <div class="dice-face face-front">✦</div>
+            <div class="dice-face face-back">◇</div>
+            <div class="dice-face face-right">☾</div>
+            <div class="dice-face face-left">✧</div>
+            <div class="dice-face face-top">◈</div>
+            <div class="dice-face face-bottom">◉</div>
+
+        </div>
+
+    </div>
+
+    <!-- ROLL -->
+    <div class="dice-roll-area">
+
+        <button
+            id="diceRollButton"
+            class="dice-roll-btn"
+            onclick="rollReincarnationDice()"
+            disabled>
+            ROLL DICE
+        </button>
+
+        <div id="diceRollCount" class="roll-count">
+            Rolls: 0
+        </div>
+
+    </div>
+
+    <!-- RESULT -->
+    <div id="diceResult" class="dice-result">
+
+        <div id="resultRarity" class="result-rarity"></div>
+
+        <div id="resultTitle" class="result-title"></div>
+
+        <div id="resultRate" class="result-rate"></div>
+
+    </div>
+
+</div>
 <!-- Contact -->
 <div class="content-block" id="contact">
 <div class="block-title">THE END?</div>
@@ -2519,6 +2893,810 @@ async function sealMessage() {
   setInterval(()=>{if(!reacting&&Math.random()<.7)particles("kezePetSpark",["✦","✧"],1,"--spark-x",650)},5000);
   pet.style.left=x+"px";pet.style.top=y+"px";requestAnimationFrame(tick);
 })();
+       // ==========================================
+// REINCARNATION DICE — DICE BRAIN
+// ==========================================
+
+const DICE_TITLES = [
+
+    // COMMON — 45%
+    {
+        id: "wandering-soul",
+        title: "Wandering Soul",
+        rarity: "Common",
+        rate: 15,
+        rank: 1
+    },
+    {
+        id: "lost-adventurer",
+        title: "Lost Adventurer",
+        rarity: "Common",
+        rate: 12,
+        rank: 1
+    },
+    {
+        id: "newborn-soul",
+        title: "Newborn Soul",
+        rarity: "Common",
+        rate: 10,
+        rank: 1
+    },
+    {
+        id: "ordinary-human",
+        title: "Ordinary Human",
+        rarity: "Common",
+        rate: 8,
+        rank: 1
+    },
+
+    // UNCOMMON — 25%
+    {
+        id: "moonlit-traveler",
+        title: "Moonlit Traveler",
+        rarity: "Uncommon",
+        rate: 9,
+        rank: 2
+    },
+    {
+        id: "rune-seeker",
+        title: "Rune Seeker",
+        rarity: "Uncommon",
+        rate: 8,
+        rank: 2
+    },
+    {
+        id: "spirit-walker",
+        title: "Spirit Walker",
+        rarity: "Uncommon",
+        rate: 8,
+        rank: 2
+    },
+
+    // RARE — 15%
+    {
+        id: "demon-slayer",
+        title: "Demon Slayer",
+        rarity: "Rare",
+        rate: 5,
+        rank: 3
+    },
+    {
+        id: "dragon-kin",
+        title: "Dragon Kin",
+        rarity: "Rare",
+        rate: 5,
+        rank: 3
+    },
+    {
+        id: "void-hunter",
+        title: "Void Hunter",
+        rarity: "Rare",
+        rate: 5,
+        rank: 3
+    },
+
+    // EPIC — 8%
+    {
+        id: "celestial-knight",
+        title: "Celestial Knight",
+        rarity: "Epic",
+        rate: 3,
+        rank: 4
+    },
+    {
+        id: "abyss-walker",
+        title: "Abyss Walker",
+        rarity: "Epic",
+        rate: 2.5,
+        rank: 4
+    },
+    {
+        id: "arcane-sovereign",
+        title: "Arcane Sovereign",
+        rarity: "Epic",
+        rate: 2.5,
+        rank: 4
+    },
+
+    // LEGENDARY — 4%
+    {
+        id: "dragon-emperor",
+        title: "Dragon Emperor",
+        rarity: "Legendary",
+        rate: 1.5,
+        rank: 5
+    },
+    {
+        id: "fate-breaker",
+        title: "Fate Breaker",
+        rarity: "Legendary",
+        rate: 1.3,
+        rank: 5
+    },
+    {
+        id: "immortal-king",
+        title: "Immortal King",
+        rarity: "Legendary",
+        rate: 1.2,
+        rank: 5
+    },
+
+    // MYTHIC — 2%
+    {
+        id: "world-devourer",
+        title: "World Devourer",
+        rarity: "Mythic",
+        rate: 1.1,
+        rank: 6
+    },
+    {
+        id: "heavens-chosen",
+        title: "Heaven's Chosen",
+        rarity: "Mythic",
+        rate: 1.1,
+        rank: 6
+    },
+    {
+        id: "heavens-chosen",
+        title: "Heaven's Chosen",
+        rarity: "Mythic",
+        rate: 0.9,
+        rank: 6
+    },
+
+    // SECRET — 0.8%
+    {
+        id: "nameless-one",
+        title: "Nameless One",
+        rarity: "Secret",
+        rate: 0.5,
+        rank: 7
+    },
+    {
+        id: "forgotten-god",
+        title: "The Forgotten God",
+        rarity: "Secret",
+        rate: 0.3,
+        rank: 7
+    },
+
+    // GOD — 0.2%
+    {
+        id: "one-beyond-fate",
+        title: "The One Beyond Fate",
+        rarity: "God",
+        rate: 0.2,
+        rank: 8
+    }
+];
+
+
+// ==========================================
+// DICE PLAYER
+// ==========================================
+
+let dicePlayerName = localStorage.getItem("reincarnationDiceName");
+let diceRolls = Number(
+    localStorage.getItem("reincarnationDiceRolls") || 0
+);
+
+const diceNameInput =
+    document.getElementById("diceNameInput");
+
+const diceNameArea =
+    document.getElementById("diceNameArea");
+
+const dicePlayer =
+    document.getElementById("dicePlayer");
+
+const diceRollButton =
+    document.getElementById("diceRollButton");
+
+const diceRollCount =
+    document.getElementById("diceRollCount");
+
+
+// ==========================================
+// LOAD EXISTING PLAYER
+// ==========================================
+
+function loadDicePlayer() {
+
+    if (!dicePlayerName) {
+        return;
+    }
+
+    diceNameArea.style.display = "none";
+
+    dicePlayer.style.display = "block";
+
+    dicePlayer.innerHTML =
+        "SOUL REGISTERED: <strong>" +
+        escapeDiceText(dicePlayerName) +
+        "</strong>";
+
+    diceRollButton.disabled = false;
+
+    updateDiceRollCount();
+}
+
+
+// ==========================================
+// REGISTER NAME
+// ==========================================
+
+function registerDicePlayer() {
+
+    const name = diceNameInput.value.trim();
+
+    if (!name) {
+        alert("Enter your name first.");
+        return;
+    }
+
+    if (name.length < 2) {
+        alert("Your name must be at least 2 characters.");
+        return;
+    }
+
+    dicePlayerName = name;
+
+    localStorage.setItem(
+        "reincarnationDiceName",
+        dicePlayerName
+    );
+
+    diceNameArea.style.display = "none";
+
+    dicePlayer.style.display = "block";
+
+    dicePlayer.innerHTML =
+        "SOUL REGISTERED: <strong>" +
+        escapeDiceText(dicePlayerName) +
+        "</strong>";
+
+    diceRollButton.disabled = false;
+}
+
+
+// ==========================================
+// ESCAPE PLAYER NAME
+// ==========================================
+
+function escapeDiceText(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+
+// ==========================================
+// UPDATE ROLL COUNT
+// ==========================================
+
+function updateDiceRollCount() {
+
+    diceRollCount.textContent =
+        "Rolls: " + diceRolls;
+}
+
+
+// ==========================================
+// WEIGHTED RANDOM TITLE
+// ==========================================
+
+function getRandomDiceTitle() {
+
+    const random =
+        Math.random() * 100;
+
+    let cumulative = 0;
+
+    for (const item of DICE_TITLES) {
+
+        cumulative += item.rate;
+
+        if (random <= cumulative) {
+            return item;
+        }
+    }
+
+    return DICE_TITLES[0];
+}
+
+       
+       // ==========================================
+// ROLL DICE
+// ==========================================
+
+let diceCurrentlyRolling = false;
+
+function rollReincarnationDice() {
+
+    if (!dicePlayerName) {
+        alert("Register your name first.");
+        return;
+    }
+
+    if (diceCurrentlyRolling) {
+        return;
+    }
+
+    diceCurrentlyRolling = true;
+
+    diceRollButton.disabled = true;
+
+    const dice =
+        document.getElementById("magicDice");
+
+    const result =
+        document.getElementById("diceResult");
+
+    result.className = "dice-result";
+
+    // Hide previous result
+    result.style.display = "none";
+
+    // Start dice animation
+    dice.classList.remove("dice-rolling");
+
+    // Force browser reflow
+    void dice.offsetWidth;
+
+    dice.classList.add("dice-rolling");
+
+
+    // Choose result BEFORE reveal
+    const selectedTitle =
+        getRandomDiceTitle();
+
+
+    // Wait for dice animation
+    setTimeout(function() {
+
+        showDiceResult(selectedTitle);
+
+        dice.classList.remove("dice-rolling");
+
+        diceCurrentlyRolling = false;
+
+        diceRollButton.disabled = false;
+
+    }, 1850);
+}
+
+
+// ==========================================
+// SHOW RESULT
+// ==========================================
+
+function showDiceResult(item) {
+
+    const result =
+        document.getElementById("diceResult");
+
+    const rarity =
+        document.getElementById("resultRarity");
+
+    const title =
+        document.getElementById("resultTitle");
+
+    const rate =
+        document.getElementById("resultRate");
+
+
+    diceRolls++;
+
+    localStorage.setItem(
+        "reincarnationDiceRolls",
+        diceRolls
+    );
+
+    updateDiceRollCount();
+
+
+    rarity.textContent =
+        item.rarity.toUpperCase();
+
+
+    title.textContent =
+        item.title;
+
+
+    rate.textContent =
+        "Drop chance: " + item.rate + "%";
+
+
+    // Remove old rarity classes
+    result.classList.remove(
+        "rarity-common",
+        "rarity-uncommon",
+        "rarity-rare",
+        "rarity-epic",
+        "rarity-legendary",
+        "rarity-mythic",
+        "rarity-secret",
+        "rarity-god"
+    );
+
+
+    // Add rarity class
+    result.classList.add(
+        "rarity-" +
+        item.rarity.toLowerCase()
+    );
+
+
+    result.style.display = "block";
+
+
+    // Restart reveal animation
+    result.classList.remove("show");
+
+    void result.offsetWidth;
+
+    result.classList.add("show");
+
+
+    // Special effects
+    playRarityEffect(item);
+}
+
+
+// ==========================================
+// RARITY EFFECTS
+// ==========================================
+
+function playRarityEffect(item) {
+
+    const system =
+        document.getElementById(
+            "reincarnationDice"
+        );
+
+
+    // COMMON
+    if (item.rank === 1) {
+
+        createDiceParticles(8);
+
+    }
+
+
+    // UNCOMMON
+    else if (item.rank === 2) {
+
+        createDiceParticles(15);
+
+    }
+
+
+    // RARE
+    else if (item.rank === 3) {
+
+        createDiceParticles(25);
+
+        screenFlash(
+            "rgba(70,140,255,.25)"
+        );
+
+    }
+
+
+    // EPIC
+    else if (item.rank === 4) {
+
+        createDiceParticles(40);
+
+        screenFlash(
+            "rgba(180,70,255,.35)"
+        );
+
+        diceShake();
+
+    }
+
+
+    // LEGENDARY
+    else if (item.rank === 5) {
+
+        createDiceParticles(60);
+
+        screenFlash(
+            "rgba(255,170,40,.45)"
+        );
+
+        diceShake();
+
+        system.animate(
+            [
+                {transform:"scale(1)"},
+                {transform:"scale(1.03)"},
+                {transform:"scale(1)"}
+            ],
+            {
+                duration:900,
+                easing:"ease-out"
+            }
+        );
+
+    }
+
+
+    // MYTHIC
+    else if (item.rank === 6) {
+
+        createDiceParticles(90);
+
+        screenFlash(
+            "rgba(255,40,100,.55)"
+        );
+
+        diceShake();
+
+        document.body.animate(
+            [
+                {filter:"brightness(1)"},
+                {filter:"brightness(1.7)"},
+                {filter:"brightness(1)"}
+            ],
+            {
+                duration:1000,
+                easing:"ease-out"
+            }
+        );
+
+    }
+
+
+    // SECRET
+    else if (item.rank === 7) {
+
+        createDiceParticles(120);
+
+        screenFlash(
+            "rgba(0,0,0,.75)"
+        );
+
+        diceShake();
+
+        setTimeout(function(){
+
+            screenFlash(
+                "rgba(255,255,255,.5)"
+            );
+
+        }, 350);
+
+    }
+
+
+    // GOD
+    else if (item.rank === 8) {
+
+        createDiceParticles(180);
+
+        screenFlash(
+            "rgba(255,255,255,.85)"
+        );
+
+        diceShake();
+
+        document.body.animate(
+            [
+                {filter:"brightness(1)"},
+                {filter:"brightness(2.2)"},
+                {filter:"brightness(.6)"},
+                {filter:"brightness(1.5)"},
+                {filter:"brightness(1)"}
+            ],
+            {
+                duration:1800,
+                easing:"ease-in-out"
+            }
+        );
+
+    }
+}
+
+       
+       // ==========================================
+// SCREEN FLASH
+// ==========================================
+
+function screenFlash(color) {
+
+    const flash =
+        document.createElement("div");
+
+    flash.style.position = "fixed";
+    flash.style.inset = "0";
+    flash.style.background = color;
+    flash.style.pointerEvents = "none";
+    flash.style.zIndex = "99999";
+
+    document.body.appendChild(flash);
+
+    flash.animate(
+        [
+            {opacity:0},
+            {opacity:1},
+            {opacity:0}
+        ],
+        {
+            duration:600,
+            easing:"ease-out"
+        }
+    ).onfinish = function() {
+
+        flash.remove();
+
+    };
+}
+
+
+// ==========================================
+// DICE SHAKE
+// ==========================================
+
+function diceShake() {
+
+    const dice =
+        document.getElementById("magicDice");
+
+    dice.animate(
+        [
+            {transform:"translateX(0)"},
+            {transform:"translateX(-7px) rotate(-3deg)"},
+            {transform:"translateX(7px) rotate(3deg)"},
+            {transform:"translateX(-5px) rotate(-2deg)"},
+            {transform:"translateX(5px) rotate(2deg)"},
+            {transform:"translateX(0)"}
+        ],
+        {
+            duration:500,
+            easing:"ease-in-out"
+        }
+    );
+}
+
+
+// ==========================================
+// MAGIC PARTICLES
+// ==========================================
+
+function createDiceParticles(amount) {
+
+    const symbols = [
+        "✦",
+        "✧",
+        "◆",
+        "◇",
+        "✶",
+        "✹",
+        "•"
+    ];
+
+
+    for (
+        let i = 0;
+        i < amount;
+        i++
+    ) {
+
+        const particle =
+            document.createElement("div");
+
+        particle.textContent =
+            symbols[
+                Math.floor(
+                    Math.random() *
+                    symbols.length
+                )
+            ];
+
+
+        particle.style.position =
+            "fixed";
+
+        particle.style.left =
+            (Math.random() * 100) + "%";
+
+        particle.style.top =
+            (40 + Math.random() * 35) + "%";
+
+        particle.style.fontSize =
+            (8 + Math.random() * 18) + "px";
+
+        particle.style.pointerEvents =
+            "none";
+
+        particle.style.zIndex =
+            "100000";
+
+        particle.style.opacity =
+            "1";
+
+
+        document.body.appendChild(
+            particle
+        );
+
+
+        const x =
+            (Math.random() - .5) * 300;
+
+        const y =
+            (Math.random() - .5) * 300;
+
+
+        particle.animate(
+            [
+                {
+                    transform:"translate(0,0) scale(1)",
+                    opacity:1
+                },
+                {
+                    transform:
+                        "translate(" +
+                        x +
+                        "px," +
+                        y +
+                        "px) scale(0)",
+                    opacity:0
+                }
+            ],
+            {
+                duration:
+                    700 +
+                    Math.random() * 900,
+
+                easing:"cubic-bezier(.2,.8,.2,1)"
+            }
+        ).onfinish = function() {
+
+            particle.remove();
+
+        };
+    }
+}
+
+
+// ==========================================
+// ENTER KEY SUPPORT
+// ==========================================
+
+if (diceNameInput) {
+
+    diceNameInput.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                registerDicePlayer();
+
+            }
+
+        }
+    );
+
+}
+
+
+// ==========================================
+// LOAD PLAYER ON PAGE OPEN
+// ==========================================
+
+loadDicePlayer();
+
+
+// ==========================================
+// END REINCARNATION DICE
+// ==========================================
 </script>
 </body>
 </html>
