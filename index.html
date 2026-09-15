@@ -1085,9 +1085,29 @@ body > *{position:relative;z-index:1}
 .gallery-toggle:active{transform:none}
 .gallery-toggle .arrow{transition:transform .3s ease;color:var(--gold)}
 .gallery-toggle.active .arrow{transform:rotate(180deg)}
-.gallery-content,.manhwa-content,.guestbook-content{max-height:0;overflow:hidden;transition:max-height .5s ease,opacity .3s ease;opacity:0}
-.gallery-content.open,.manhwa-content.open,.guestbook-content.open{max-height:1800px;opacity:1}
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gallery-content,
+.manhwa-content,
+.guestbook-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .5s ease, opacity .3s ease;
+    opacity: 0;
+}
+
+.gallery-content.open {
+    max-height: 430px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    opacity: 1;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.manhwa-content.open,
+.guestbook-content.open {
+    max-height: 600px;
+    opacity: 1;
+}
 .photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid rgba(255,222,211,.16);cursor:pointer;transition:transform .2s ease,filter .2s ease}
 .photo-grid img:hover{transform:scale(1.025);filter:brightness(1.08)}
 .manhwa-search,.guestbook-input{width:100%;padding:11px 12px;margin-bottom:9px;border:1px solid rgba(255,222,211,.15);border-radius:10px;background:rgba(3,4,15,.34);color:#f3e9e6;font-family:inherit;font-size:.77rem;outline:none}
@@ -1856,7 +1876,20 @@ function openLightbox(src) {
 function closeLightbox() {
     document.getElementById("lightbox").style.display = "none";
 }
-    
+
+// PHOTO GALLERY CLICK
+document.querySelectorAll(".photo-grid img").forEach(function(img) {
+    img.addEventListener("click", function(event) {
+        event.stopPropagation();
+        openLightbox(this.src);
+    });
+});
+
+// Don't close the lightbox when clicking the image itself
+document.getElementById("lightboxImg").addEventListener("click", function(event) {
+    event.stopPropagation();
+});
+       
     /* MANHWA LIST */
 
 function toggleManhwa(button) {
