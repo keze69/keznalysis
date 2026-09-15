@@ -2218,6 +2218,146 @@ body::after{
     </div>
 
 </div>
+       <!-- ============================= -->
+<!-- DICE LEADERBOARD -->
+<!-- ============================= -->
+
+<style>
+.dice-leaderboard{
+    margin-top:18px;
+    padding:18px;
+    border:1px solid rgba(255,222,211,.16);
+    border-radius:16px;
+    background:linear-gradient(
+        145deg,
+        rgba(20,15,30,.96),
+        rgba(8,8,15,.98)
+    );
+}
+
+.leaderboard-title{
+    text-align:center;
+    font-size:18px;
+    font-weight:900;
+    letter-spacing:3px;
+}
+
+.leaderboard-subtitle{
+    text-align:center;
+    font-size:11px;
+    opacity:.55;
+    margin-top:5px;
+    margin-bottom:16px;
+}
+
+.leaderboard-list{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.leaderboard-empty{
+    text-align:center;
+    padding:20px;
+    font-size:12px;
+    opacity:.5;
+}
+
+.leaderboard-row{
+    display:grid;
+    grid-template-columns:34px 1fr auto;
+    gap:10px;
+    align-items:center;
+    padding:11px;
+    border-radius:10px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.07);
+}
+
+.leaderboard-position{
+    text-align:center;
+    font-size:13px;
+    font-weight:900;
+    opacity:.55;
+}
+
+.leaderboard-player{
+    min-width:0;
+}
+
+.leaderboard-name{
+    font-size:13px;
+    font-weight:800;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.leaderboard-title-name{
+    font-size:11px;
+    opacity:.6;
+    margin-top:3px;
+}
+
+.leaderboard-rarity{
+    text-align:right;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
+
+.leaderboard-rate{
+    text-align:right;
+    font-size:9px;
+    opacity:.45;
+    margin-top:3px;
+}
+
+.leaderboard-refresh{
+    display:block;
+    margin:14px auto 0;
+    padding:8px 14px;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:8px;
+    background:rgba(255,255,255,.04);
+    color:inherit;
+    cursor:pointer;
+    font-size:10px;
+}
+
+.leaderboard-refresh:active{
+    transform:scale(.96);
+}
+</style>
+
+<div class="content-block dice-leaderboard" id="diceLeaderboard">
+
+    <div class="leaderboard-title">
+        SOUL LEADERBOARD
+    </div>
+
+    <div class="leaderboard-subtitle">
+        ONLY SECRET AND GOD SOULS ARE RECORDED
+    </div>
+
+    <div
+        id="leaderboardList"
+        class="leaderboard-list">
+
+        <div class="leaderboard-empty">
+            Searching the soul records...
+        </div>
+
+    </div>
+
+    <button
+        class="leaderboard-refresh"
+        onclick="loadDiceLeaderboard()">
+        REFRESH SOUL RECORDS
+    </button>
+
+</div>
 <!-- Contact -->
 <div class="content-block" id="contact">
 <div class="block-title">THE END?</div>
@@ -3343,6 +3483,7 @@ function showDiceResult(item) {
 
     // Special effects
     playRarityEffect(item);
+    saveDiceRoll(item);
 }
 
 
@@ -3697,6 +3838,593 @@ loadDicePlayer();
 // ==========================================
 // END REINCARNATION DICE
 // ==========================================
+
+       // ==========================================
+// LIVE SOUL LEADERBOARD
+// ==========================================
+
+const DICE_SUPABASE_URL =
+    "https://lutmitorlvmufaycirni.supabase.co";
+
+const DICE_SUPABASE_KEY =
+    "sb_publishable_KIqNZ5fTJsQ14DBATS8YNA_H_qfDa1j";
+
+
+// ==========================================
+// CURRENT WEEK
+// ==========================================
+
+function getDiceWeekKey() {
+
+    const now = new Date();
+
+    const day = now.getUTCDay();
+
+    const diff =
+        day === 0 ? -6 : 1 - day;
+
+    const monday =
+        new Date(now);
+
+    monday.setUTCDate(
+        now.getUTCDate() + diff
+    );
+
+    return monday
+        .toISOString()
+        .slice(0,10);
+}
+
+
+// ==========================================
+// SUPABASE HEADERS
+// ==========================================
+
+function diceSupabaseHeaders() {
+
+    return {
+        "Content-Type":
+            "application/json",
+
+        "apikey":
+            DICE_SUPABASE_KEY,
+
+        "Authorization":
+            "Bearer " +
+            DICE_SUPABASE_KEY
+    };
+}
+
+
+// ==========================================
+// REGISTER PLAYER ONLINE
+// ==========================================
+
+async function registerDicePlayerOnline(name) {
+
+    try {
+
+        const response = await fetch(
+            DICE_SUPABASE_URL +
+            "/rest/v1/dice_players?select=id,name",
+            {
+                method:"POST",
+
+                headers:{
+                    ...diceSupabaseHeaders(),
+
+                    "Prefer":
+                        "return=representation"
+                },
+
+                body:JSON.stringify({
+                    name:name
+                })
+            }
+        );
+
+
+        // Name already exists
+        if (response.status === 409) {
+
+            alert(
+                "That soul name already belongs to another player."
+            );
+
+            return false;
+        }
+
+
+        if (!response.ok) {
+
+            console.error(
+                await response.text()
+            );
+
+            alert(
+                "Could not register your soul."
+            );
+
+            return false;
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!data || !data[0]) {
+
+            return false;
+        }
+
+
+        localStorage.setItem(
+            "reincarnationDicePlayerId",
+            data[0].id
+        );
+
+
+        return true;
+
+    } catch(error) {
+
+        console.error(
+            "Player registration error:",
+            error
+        );
+
+        alert(
+            "Could not connect to the Soul Records."
+        );
+
+        return false;
+    }
+}
+
+
+// ==========================================
+// SAVE ROLL
+// ==========================================
+
+async function saveDiceRoll(item) {
+
+    if (!dicePlayerName) {
+        return;
+    }
+
+
+    let playerId =
+        localStorage.getItem(
+            "reincarnationDicePlayerId"
+        );
+
+
+    // If player has no database ID yet,
+    // register them first.
+    if (!playerId) {
+
+        const registered =
+            await registerDicePlayerOnline(
+                dicePlayerName
+            );
+
+        if (!registered) {
+            return;
+        }
+
+        playerId =
+            localStorage.getItem(
+                "reincarnationDicePlayerId"
+            );
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                DICE_SUPABASE_URL +
+                "/rest/v1/dice_rolls",
+                {
+                    method:"POST",
+
+                    headers:{
+                        ...diceSupabaseHeaders(),
+
+                        "Prefer":
+                            "return=minimal"
+                    },
+
+                    body:JSON.stringify({
+
+                        player_id:
+                            Number(playerId),
+
+                        title_id:
+                            item.id,
+
+                        rarity:
+                            item.rarity,
+
+                        title_name:
+                            item.title,
+
+                        drop_rate:
+                            item.rate,
+
+                        rarity_rank:
+                            item.rank,
+
+                        week_key:
+                            getDiceWeekKey()
+
+                    })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Roll save failed:",
+                await response.text()
+            );
+
+            return;
+        }
+
+
+        // Refresh leaderboard immediately
+        loadDiceLeaderboard();
+
+
+    } catch(error) {
+
+        console.error(
+            "Roll save error:",
+            error
+        );
+    }
+}
+
+
+// ==========================================
+// LOAD LEADERBOARD
+// ==========================================
+
+async function loadDiceLeaderboard() {
+
+    const list =
+        document.getElementById(
+            "leaderboardList"
+        );
+
+
+    if (!list) {
+        return;
+    }
+
+
+    list.innerHTML =
+        '<div class="leaderboard-empty">' +
+        'Searching the soul records...' +
+        '</div>';
+
+
+    try {
+
+        const week =
+            getDiceWeekKey();
+
+
+        const url =
+            DICE_SUPABASE_URL +
+            "/rest/v1/dice_rolls" +
+            "?select=player_id,title_id,title_name,rarity,drop_rate,rarity_rank,rolled_at" +
+            "&week_key=eq." +
+            encodeURIComponent(week) +
+            "&rarity_rank=gte.7" +
+            "&order=rarity_rank.desc,rolled_at.asc";
+
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method:"GET",
+                    headers:
+                        diceSupabaseHeaders()
+                }
+            );
+
+
+        if (!response.ok) {
+
+            console.error(
+                await response.text()
+            );
+
+            list.innerHTML =
+                '<div class="leaderboard-empty">' +
+                'Soul records unavailable.' +
+                '</div>';
+
+            return;
+        }
+
+
+        const rolls =
+            await response.json();
+
+
+        if (!rolls.length) {
+
+            list.innerHTML =
+                '<div class="leaderboard-empty">' +
+                'No Secret or God souls have appeared this week... yet.' +
+                '</div>';
+
+            return;
+        }
+
+
+        // ==================================
+        // KEEP ONLY FIRST HOLDER OF EACH TITLE
+        // ==================================
+
+        const uniqueTitles =
+            new Map();
+
+
+        for (const roll of rolls) {
+
+            if (
+                !uniqueTitles.has(
+                    roll.title_id
+                )
+            ) {
+
+                uniqueTitles.set(
+                    roll.title_id,
+                    roll
+                );
+            }
+        }
+
+
+        const winners =
+            Array.from(
+                uniqueTitles.values()
+            );
+
+
+        // ==================================
+        // GET PLAYER NAMES
+        // ==================================
+
+        const playerIds =
+            [
+                ...new Set(
+                    winners.map(
+                        r => r.player_id
+                    )
+                )
+            ];
+
+
+        if (!playerIds.length) {
+            return;
+        }
+
+
+        const playerQuery =
+            playerIds
+                .map(
+                    id =>
+                        encodeURIComponent(id)
+                )
+                .join(",");
+
+
+        const playerResponse =
+            await fetch(
+                DICE_SUPABASE_URL +
+                "/rest/v1/dice_players" +
+                "?select=id,name" +
+                "&id=in.(" +
+                playerQuery +
+                ")",
+                {
+                    method:"GET",
+                    headers:
+                        diceSupabaseHeaders()
+                }
+            );
+
+
+        const players =
+            await playerResponse.json();
+
+
+        const playerMap =
+            new Map();
+
+
+        players.forEach(
+            player => {
+
+                playerMap.set(
+                    String(player.id),
+                    player.name
+                );
+
+            }
+        );
+
+
+        // ==================================
+        // DRAW LEADERBOARD
+        // ==================================
+
+        list.innerHTML = "";
+
+
+        winners.forEach(
+            (winner,index) => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "leaderboard-row";
+
+
+                const position =
+                    document.createElement(
+                        "div"
+                    );
+
+                position.className =
+                    "leaderboard-position";
+
+                position.textContent =
+                    "#" + (index + 1);
+
+
+                const player =
+                    document.createElement(
+                        "div"
+                    );
+
+                player.className =
+                    "leaderboard-player";
+
+
+                const playerName =
+                    document.createElement(
+                        "div"
+                    );
+
+                playerName.className =
+                    "leaderboard-name";
+
+                playerName.textContent =
+                    playerMap.get(
+                        String(
+                            winner.player_id
+                        )
+                    ) ||
+                    "Unknown Soul";
+
+
+                const title =
+                    document.createElement(
+                        "div"
+                    );
+
+                title.className =
+                    "leaderboard-title-name";
+
+                title.textContent =
+                    winner.title_name;
+
+
+                player.appendChild(
+                    playerName
+                );
+
+                player.appendChild(
+                    title
+                );
+
+
+                const rarity =
+                    document.createElement(
+                        "div"
+                    );
+
+                rarity.className =
+                    "leaderboard-rarity";
+
+
+                const rarityName =
+                    document.createElement(
+                        "div"
+                    );
+
+                rarityName.textContent =
+                    winner.rarity;
+
+
+                const rarityRate =
+                    document.createElement(
+                        "div"
+                    );
+
+                rarityRate.className =
+                    "leaderboard-rate";
+
+                rarityRate.textContent =
+                    winner.drop_rate +
+                    "%";
+
+
+                rarity.appendChild(
+                    rarityName
+                );
+
+                rarity.appendChild(
+                    rarityRate
+                );
+
+
+                row.appendChild(
+                    position
+                );
+
+                row.appendChild(
+                    player
+                );
+
+                row.appendChild(
+                    rarity
+                );
+
+
+                list.appendChild(
+                    row
+                );
+
+            }
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Leaderboard error:",
+            error
+        );
+
+        list.innerHTML =
+            '<div class="leaderboard-empty">' +
+            'Unable to read Soul Records.' +
+            '</div>';
+    }
+}
+
+
+// ==========================================
+// LOAD LEADERBOARD WHEN PAGE OPENS
+// ==========================================
+
+setTimeout(
+    loadDiceLeaderboard,
+    500
+);
 </script>
 </body>
 </html>
