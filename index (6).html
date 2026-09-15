@@ -3937,15 +3937,22 @@ async function registerDicePlayerOnline(name) {
 
         if (!response.ok) {
 
-            console.error(
-                await response.text()
-            );
+    const errorText = await response.text();
 
-            alert(
-                "Could not register your soul."
-            );
+    console.error(
+        "SUPABASE PLAYER ERROR:",
+        response.status,
+        errorText
+    );
 
-            return false;
+    alert(
+        "Soul registration failed (" +
+        response.status +
+        "): " +
+        errorText
+    );
+
+    return false;
         }
 
 
