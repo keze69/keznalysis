@@ -4107,6 +4107,11 @@ async function registerDicePlayerOnline(name) {
 
 async function saveDiceRoll(item) {
 
+    // Only save Secret and God souls
+    if (item.rank < 7) {
+        return;
+    }
+
     if (!dicePlayerName) {
         console.error("No dice player name.");
         return;
